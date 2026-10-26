@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grade 5 Brain Gym</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one centered column. Home = day cards + skills panel; a day opens a lesson card, then a one-question-at-a-time quiz, then a results page. */
+:root{
+  --bg:#F4F6FB; --surface:#FFFFFF; --ink:#1B2040; --muted:#586080; --line:#D9DEEC;
+  --accent:#0D7C8F; --accent-ink:#FFFFFF; --accent-soft:#DDF1F4;
+  --gold:#E9A820; --ok:#1F8F55; --ok-soft:#DDF3E6; --bad:#C8453B; --bad-soft:#FBE4E1;
+  --v:#4F6BED; --q:#D9731F; --n:#1E9E6A; --a:#B0449C;
+  --font-display:'Fredoka',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12162B; --surface:#1B2040; --ink:#EDEFFA; --muted:#A3AACB; --line:#2D3460;
+    --accent:#46BFD3; --accent-ink:#07202A; --accent-soft:#16323F;
+    --gold:#F2BC45; --ok:#4FD08E; --ok-soft:#14352A; --bad:#FF8379; --bad-soft:#3E1F28;
+    --v:#8CA0FF; --q:#F0A25F; --n:#4FD6A0; --a:#E58BD6; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12162B; --surface:#1B2040; --ink:#EDEFFA; --muted:#A3AACB; --line:#2D3460;
+  --accent:#46BFD3; --accent-ink:#07202A; --accent-soft:#16323F;
+  --gold:#F2BC45; --ok:#4FD08E; --ok-soft:#14352A; --bad:#FF8379; --bad-soft:#3E1F28;
+  --v:#8CA0FF; --q:#F0A25F; --n:#4FD6A0; --a:#E58BD6; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:17px;line-height:1.5}
+.wrap{max-width:860px;margin:0 auto;padding-block:20px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;line-height:1.2;margin:0;text-wrap:balance}
+h1{font-size:2rem} h2{font-size:1.45rem} h3{font-size:1.1rem}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.muted{color:var(--muted)}
+.eyebrow{font-size:.78rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 20px;border-radius:14px;border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:1rem;box-shadow:0 3px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 55%,#000)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line);box-shadow:none}
+.btn.ghost:active{transform:none}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.link{background:none;border:0;padding:6px 0;color:var(--accent);font-weight:800;text-decoration:underline;text-underline-offset:3px}
+
+/* chips */
+.chip{display:inline-flex;align-items:center;gap:7px;padding:3px 11px 3px 9px;border-radius:99px;font-size:.8rem;font-weight:800;background:color-mix(in srgb,var(--c,var(--accent)) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--c,var(--accent)) 40%,var(--surface))}
+.chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c,var(--accent))}
+.chip.timed{--c:var(--gold)}
+.area-V{--c:var(--v)} .area-Q{--c:var(--q)} .area-N{--c:var(--n)} .area-A{--c:var(--a)}
+
+/* home */
+.hero{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:22px}
+.hero p{max-width:46ch;margin-top:6px}
+.meter{display:flex;flex-direction:column;gap:4px;min-width:170px}
+.meter b{font-family:var(--font-display);font-size:1.5rem;font-weight:600}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:99px;background:var(--c,var(--accent))}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-top:12px}
+.skill{display:flex;flex-direction:column;gap:6px}
+.skill .row{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:12px}
+.day{display:flex;flex-direction:column;gap:10px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;width:100%}
+.day:hover{border-color:var(--accent)}
+.day .num{font-family:var(--font-display);font-size:1.05rem;font-weight:600;color:var(--muted)}
+.day h3{font-size:1.12rem}
+.day .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.day .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:.92rem;color:var(--muted)}
+.day .done{color:var(--ok)}
+.section-title{margin-top:26px}
+
+/* lesson */
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.lesson{display:flex;flex-direction:column;gap:16px}
+.lesson ul{margin:8px 0 0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.example{background:var(--accent-soft);border-radius:14px;padding:14px 16px}
+.example .a{margin-top:6px;font-weight:700}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+
+/* quiz */
+.clock{font-family:var(--font-display);font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums;padding:4px 14px;border-radius:99px;background:var(--surface);border:1px solid var(--line)}
+.clock.low{color:var(--bad);border-color:var(--bad)}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:6px 0 8px;font-weight:800}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;margin-top:14px}
+.passage{background:var(--bg);border-left:4px solid var(--c,var(--accent));border-radius:10px;padding:12px 16px;font-size:1rem;max-height:none}
+.qtext{font-family:var(--font-display);font-size:1.35rem;font-weight:500;line-height:1.35;overflow-wrap:anywhere}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-width:520px}
+.cell{display:flex;align-items:center;justify-content:center;text-align:center;min-height:62px;padding:6px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:1.5rem;font-weight:700;overflow-wrap:anywhere}
+.cell.long{font-size:.95rem}
+.cell.q{background:var(--accent-soft);border:2px dashed var(--accent);color:var(--accent);font-family:var(--font-display);font-size:1.8rem}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;min-height:54px;padding:10px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-weight:700;overflow-wrap:anywhere}
+.opt .L{flex:none;display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--bg);border:1px solid var(--line);font-size:.85rem;font-weight:800}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt[disabled]{cursor:default}
+.ans{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.ans input{flex:1 1 180px;min-width:0;min-height:50px;padding:8px 14px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:1.2rem;font-weight:700}
+.ans input:focus{border-color:var(--accent);outline:none}
+.fb{border-radius:14px;padding:12px 16px;display:flex;flex-direction:column;gap:4px}
+.fb.ok{background:var(--ok-soft);border:1px solid var(--ok)}
+.fb.no{background:var(--bad-soft);border:1px solid var(--bad)}
+.fb strong{font-family:var(--font-display);font-weight:600;font-size:1.1rem}
+.qnav{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.dot{width:36px;height:36px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-weight:800;font-size:.9rem}
+.dot.has{background:var(--accent-soft);border-color:var(--accent)}
+.dot.cur{outline:3px solid var(--accent);outline-offset:1px}
+.qfoot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}
+
+/* results */
+.score{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.big{font-family:var(--font-display);font-size:3.2rem;font-weight:600;line-height:1}
+.review{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.rv{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.rv .q{font-weight:800;overflow-wrap:anywhere}
+.small{font-size:.92rem}
+@media (max-width:520px){
+  h1{font-size:1.65rem} .qtext{font-size:1.2rem} .big{font-size:2.6rem} .qcard{padding:16px}
+  .opts{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:no-preference){
+  .bar>i{transition:width .5s ease}
+}
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap"><div id="app"></div></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- data ---------- */
+var AREAS={V:'Verbal',Q:'Quantitative',N:'Nonverbal',A:'Reading & math'};
+var PASS={
+bees:"Honeybees cannot talk, but they can still give directions. When a scout bee finds a patch of flowers far from the hive, she flies home and performs a special movement called the waggle dance on the wall of the honeycomb. She walks forward in a straight line while shaking her body from side to side, then loops back to the start and repeats the pattern.\n\nThe dance is a kind of map. The angle of the straight part of the dance, compared with straight up, shows the direction of the flowers compared with the sun. The longer she waggles, the farther away the flowers are. Other bees crowd around her in the dark hive, feeling the vibrations with their antennae. Soon, many of them fly out to find the same flowers.\n\nScientists worked out the meaning of the dance in the middle of the twentieth century, and many people are surprised by how precise it is. Even when clouds hide the sun, bees can often still find it using patterns of light in the sky that humans cannot see. This helps a hive gather food quickly, which matters because a colony needs a great deal of nectar to survive the winter.",
+swamp:"The Okefenokee Swamp stretches across southern Georgia and a small part of northern Florida. Its name is often said to mean \"land of trembling earth.\" In some places, thick mats of peat, which are made of dead plants, float on top of the water. When a person steps on one, the ground can shake and ripple for several feet around. Alligators, herons, and many other animals live here, and visitors paddle quiet canoe trails through water the color of tea. The dark color comes from tannins, which seep from the leaves and roots of plants the same way tea leaves color a cup of hot water.",
+ship:"Long ago, sailors found their way across the open ocean by looking at the stars. On a clear night, the North Star stays almost exactly in the same spot in the sky, so it always shows which way is north. Later, sailors invented the compass, a tool with a magnetic needle that points north even in bad weather. Today, ships use satellites to find exact locations, but many sailors still learn to read the stars in case their electronics fail."
+};
+function mc(area,q,opts,a,why,x){return Object.assign({t:'mc',area:area,q:q,opts:opts,a:a,why:why},x||{});}
+function fr(area,q,acc,why,x){return Object.assign({t:'free',area:area,q:q,acc:acc,why:why},x||{});}
+function sf(area,q,sample,x){return Object.assign({t:'self',area:area,q:q,sample:sample,why:sample},x||{});}
+var ARROW="Each step turns the arrow a quarter turn";
+
+var DAYS=[
+{n:1,title:'Verbal analogies and classification',area:'V',mode:'practice',
+ blurb:'Name the relationship between two words, then use it on a new pair.',
+ tips:['Say the first pair as a full sentence, like "hot is the opposite of cold". Use the same sentence on the second pair.','Watch for these relationships: opposites, synonyms, part to whole, tool to job, degree (small to big), maker to product.','For "does not belong", name the group first, then find the one that does not fit.'],
+ ex:{q:'Petal : Flower :: Page : ?',a:'A petal is a part of a flower, so a page is a part of a book. Answer: Book.'},
+ qs:[
+ mc('V','Puppy : Dog :: Kitten : ?',['Cat','Bark','Milk','Mouse'],0,'A puppy is a young dog, so a kitten is a young cat.'),
+ mc('V','Pencil : Write :: Scissors : ?',['Paper','Cut','Sharp','Hand'],1,'A pencil is used to write. Scissors are used to cut.'),
+ mc('V','Fingers : Hand :: Toes : ?',['Shoe','Foot','Walk','Nail'],1,'Fingers are parts of a hand. Toes are parts of a foot.'),
+ mc('V','Whisper : Shout :: Drizzle : ?',['Rain','Downpour','Cloud','Puddle'],1,'A whisper is a quiet way to speak and a shout is a loud one. A drizzle is light rain and a downpour is heavy rain.'),
+ mc('V','Painter : Painting :: Sculptor : ?',['Statue','Brush','Gallery','Clay'],0,'A painter makes a painting. A sculptor makes a statue.'),
+ mc('V','Thermometer : Temperature :: Ruler : ?',['Wood','Length','Measure','Inches'],1,'A thermometer measures temperature. A ruler measures length.'),
+ mc('V','Which one does not belong?',['Triangle','Square','Circle','Cube'],3,'Triangle, square, and circle are flat shapes. A cube is a solid.'),
+ mc('V','Which one does not belong?',['Oak','Maple','Rose','Pine'],2,'Oak, maple, and pine are trees. A rose is a flower.'),
+ mc('V','Which one does not belong?',['Violin','Cello','Drum','Harp'],2,'Violin, cello, and harp have strings. A drum does not.'),
+ mc('V','Which word fits best with: ocean, river, lake?',['Pond','Mountain','Desert','Forest'],0,'Ocean, river, lake, and pond are all bodies of water.')
+ ]},
+{n:2,title:'Number series and patterns',area:'Q',mode:'practice',
+ blurb:'Find the rule behind a list of numbers and predict what comes next.',
+ tips:['Look at how each number changes to the next. Write the jumps between the numbers.','Ask in order: Is it adding or subtracting the same amount? Multiplying or dividing? Are the jumps growing (1, 2, 3, 4)? Are two patterns taking turns?','Know these: squares (1, 4, 9, 16, 25), doubling (2, 4, 8, 16), and Fibonacci (1, 1, 2, 3, 5, 8).'],
+ ex:{q:'1, 2, 4, 7, 11, ?',a:'The jumps are 1, 2, 3, 4, so the next jump is 5. Answer: 16.'},
+ qs:[
+ fr('Q','7, 14, 21, 28, ?',['35'],'Add 7 each time.'),
+ fr('Q','100, 90, 80, 70, ?',['60'],'Subtract 10 each time.'),
+ fr('Q','3, 6, 12, 24, ?',['48'],'Double each time.'),
+ fr('Q','1, 4, 9, 16, ?',['25'],'These are square numbers: 1×1, 2×2, 3×3, 4×4, and next 5×5.'),
+ fr('Q','2, 3, 5, 8, 12, ?',['17'],'The jumps are 1, 2, 3, 4, so the next jump is 5. 12 + 5 = 17.'),
+ fr('Q','81, 27, 9, 3, ?',['1'],'Divide by 3 each time.'),
+ fr('Q','1, 1, 2, 3, 5, 8, ?',['13'],'Each number is the sum of the two before it. 5 + 8 = 13.'),
+ fr('Q','4, 7, 5, 8, 6, 9, ?',['7'],'Two patterns take turns: add 3, then subtract 2. So 9 − 2 = 7.'),
+ fr('Q','1, 3, 6, 10, 15, ?',['21'],'The jumps are 2, 3, 4, 5, so the next jump is 6. 15 + 6 = 21.'),
+ fr('Q','Find the missing number: 5, ?, 17, 23, 29',['11'],'Add 6 each time: 5, 11, 17, 23, 29.')
+ ]},
+{n:3,title:'Figure matrices',area:'N',mode:'practice',
+ blurb:'Solve picture-pattern grids by finding the rule in each row and column.',
+ tips:['Read across each row, then down each column.','Ask what changes from box to box: the shape, the size, the shading, the number of shapes, or the direction.','Say the rule out loud before you pick an answer. If two answers fit, look for a second rule.'],
+ ex:{q:'Row 1: ▲, ▲▲, ▲▲▲. Row 2: ■, ■■, ■■■. Row 3: ●, ●●, ?',a:'Each row adds one shape per box, so the missing box has three circles.'},
+ qs:[
+ mc('N','Which answer completes the grid?',['▲','△','●','□'],0,'Each row goes filled, empty, filled.',{grid:[['●','○','●'],['■','□','■'],['▲','△','?']]}),
+ mc('N','Which answer completes the grid?',['●','▲','■','◆'],2,'Each row and column has one triangle, one square, and one circle. The missing shape is the square.',{grid:[['▲','■','●'],['■','●','▲'],['●','▲','?']]}),
+ mc('N','The third box in each row combines the first two. Which answer completes the grid?',['▲','●','▲ ●','■'],2,'The third box shows the first two shapes together, so a triangle and a circle.',{grid:[['▲','■','▲ ■'],['●','■','● ■'],['▲','●','?']]}),
+ mc('N','Which answer completes the grid?',['small triangle','large triangle','large square','medium circle'],1,'Size grows across each row: small, medium, large. This row is triangles.',{grid:[['small circle','medium circle','large circle'],['small square','medium square','large square'],['small triangle','medium triangle','?']]}),
+ mc('N','The arrows turn in a steady way. Which answer completes the grid?',['↑','→','↓','←'],0,ARROW+' clockwise. After left comes up.',{grid:[['↑','→','↓'],['→','↓','←'],['↓','←','?']]}),
+ mc('N','What comes next? Empty circle, circle 1/4 shaded, circle 1/2 shaded, circle 3/4 shaded, ?',['Empty circle','Circle 1/2 shaded','Fully shaded circle','Circle 1/4 shaded'],2,'One more quarter is shaded each time, so the next circle is fully shaded.'),
+ mc('N','Which one does not belong?',['A shape with 3 sides','A shape with 5 sides','A shape with 7 sides','A shape with 4 sides'],3,'3, 5, and 7 are odd numbers. 4 is even.'),
+ mc('N','Each box shows a number of dots. Which answer completes the grid?',['6','7','8','9'],1,'Each row goes up by 2: 3, 5, 7.',{grid:[['2 dots','4 dots','6 dots'],['1 dot','3 dots','5 dots'],['3 dots','5 dots','?']]})
+ ]},
+{n:4,title:'Reading and vocabulary in context',area:'A',mode:'practice',
+ blurb:'Find the main idea, make inferences, and work out new words from clues.',
+ tips:['Main idea: what the whole passage is about. Could it cover every paragraph?','Inference: use clues in the text plus what you already know. Always be able to point to the clue.','Context clues: reread the sentence, look for a nearby synonym or example, then try your guess in place of the word.','"NOT" questions: check each choice against the passage and cross out the ones that are stated.'],
+ ex:{q:'Maya packed an umbrella and a raincoat before she left. What can we infer?',a:'People carry these when rain is likely, so Maya expected rain.'},
+ qs:[
+ mc('A','What is the main idea of the passage?',['Bees are the only insects that dance','Honeybees share where food is by dancing','Beehives are always dark','Scientists do not understand bees'],1,'The whole passage explains how the waggle dance tells other bees where flowers are.',{p:'bees'}),
+ mc('A','What does a longer waggle tell the other bees?',['The flowers are farther away','The flowers are closer','The scout bee is tired','It is time to sleep'],0,'The passage says: the longer she waggles, the farther away the flowers are.',{p:'bees'}),
+ mc('A','Why do the other bees crowd around the dancer?',['They are afraid of her','They cannot see well in the dark, so they feel the dance with their antennae','They want to take her flowers','They are asleep'],1,'The hive is dark, so the bees feel the vibrations with their antennae.',{p:'bees'}),
+ mc('A','In the third paragraph, "worked out" is closest in meaning to:',['hid','figured out','copied','exercised'],1,'Scientists worked out the meaning of the dance means they figured out what it means.',{p:'bees'}),
+ mc('A','Which statement is NOT supported by the passage?',['Scout bees dance to tell others about flowers','The dance shows direction compared with the sun','Bees cannot find the sun on cloudy days','The dance is repeated in a pattern'],2,'The passage says bees can often still find the sun when clouds hide it.',{p:'bees'}),
+ sf('A','In one sentence, explain why the dance helps the whole colony.','Sample answer: It helps the hive find and gather food quickly, which the colony needs to survive the winter.',{p:'bees'}),
+ mc('A','Why did the author most likely write this passage?',['To tell a funny story','To explain how something works','To ask people to protect bees','To teach people to keep bees'],1,'The author explains how the waggle dance works.',{p:'bees'}),
+ mc('A','In the last paragraph, "precise" means:',['loud','exact','slow','random'],1,'Precise means exact, which fits a dance that gives directions.',{p:'bees'})
+ ]},
+{n:5,title:'Week 1 mixed review quiz',area:'A',mode:'exam',minutes:20,
+ blurb:'12 mixed questions. Answers and explanations appear at the end.',
+ tips:['This is a timed quiz with no feedback until the end, like a real test.','Skip any question that takes more than about 45 seconds and come back to it.','You can move between questions. Use the numbered boxes to jump around.'],
+ ex:{q:'How to use your time',a:'20 minutes for 12 questions is a little over 1½ minutes each.'},
+ qs:[
+ mc('V','Bird : Nest :: Bee : ?',['Honey','Hive','Flower','Sting'],1,'A nest is a bird\'s home. A hive is a bee\'s home.'),
+ mc('V','Tired : Exhausted :: Hungry : ?',['Full','Starving','Food','Thirsty'],1,'Exhausted is extremely tired. Starving is extremely hungry.'),
+ mc('V','Which one does not belong?',['Mercury','Venus','Moon','Mars'],2,'Mercury, Venus, and Mars are planets. The Moon goes around Earth.'),
+ fr('Q','6, 12, 18, 24, ?',['30'],'Add 6 each time.'),
+ fr('Q','2, 5, 11, 23, ?',['47'],'Double the number and add 1. 23 × 2 + 1 = 47.'),
+ fr('Q','64, 32, 16, 8, ?',['4'],'Divide by 2 each time.'),
+ fr('Q','A box holds 12 pencils. Mia has 5 boxes and gives away 18 pencils. How many pencils does she have left?',['42'],'5 × 12 = 60 pencils. 60 − 18 = 42.'),
+ mc('N','Which answer completes the grid?',['3 circles','2 squares','3 squares','3 triangles'],2,'The count goes up by one across each row. The shapes shift in a cycle, so row 3 ends with squares.',{grid:[['1 triangle','2 squares','3 circles'],['1 square','2 circles','3 triangles'],['1 circle','2 triangles','?']]}),
+ mc('N','Which one does not belong?',['Cube','Sphere','Square','Cone'],2,'Cube, sphere, and cone are solid shapes. A square is flat.'),
+ mc('A','Why might the swamp be called the "land of trembling earth"?',['Floating mats of peat shake when a person steps on them','Earthquakes happen there every day','Strong winds shake the trees','The water is very cold'],0,'The passage says the ground can shake and ripple when someone steps on floating peat.',{p:'swamp'}),
+ mc('A','In the passage, "seep" means:',['leak slowly','jump','freeze','shout'],0,'Tannins leak slowly out of plants into the water, like tea into a cup.',{p:'swamp'}),
+ mc('A','What does the author compare to the swamp water\'s dark color?',['Tea leaves in hot water','Coffee in a pot','Mud in a puddle','Ink in a pen'],0,'The passage says the tannins color the water the same way tea leaves color hot water.',{p:'swamp'})
+ ]},
+{n:6,title:'Number analogies and word problems',area:'Q',mode:'practice',
+ blurb:'Find the rule that turns one number into another, solve for a missing number, and handle multi-step problems.',
+ tips:['Number analogies give pairs that follow one rule. Test your rule on every pair before using it.','Missing numbers: calculate the side you can, then work backward to find the missing number.','Word problems: circle the question, underline the numbers, solve one small step at a time.'],
+ ex:{q:'3 becomes 12, 5 becomes 20, 7 becomes ?',a:'Each number is multiplied by 4. 7 × 4 = 28.'},
+ qs:[
+ fr('Q','2 becomes 8, 3 becomes 12, 5 becomes ?',['20'],'Multiply by 4.'),
+ fr('Q','10 becomes 5, 24 becomes 12, 36 becomes ?',['18'],'Divide by 2.'),
+ fr('Q','4 becomes 9, 6 becomes 13, 10 becomes ?',['21'],'Double the number and add 1. 10 × 2 + 1 = 21.'),
+ fr('Q','25 becomes 5, 49 becomes 7, 81 becomes ?',['9'],'The answer is the number that multiplies by itself to make the first number. 9 × 9 = 81.'),
+ fr('Q','? + 9 = 4 × 6',['15'],'4 × 6 = 24, and 24 − 9 = 15.'),
+ fr('Q','5 × ? = 100 − 35',['13'],'100 − 35 = 65, and 65 ÷ 5 = 13.'),
+ fr('Q','48 ÷ ? = 2 + 6',['6'],'2 + 6 = 8, and 48 ÷ 8 = 6.'),
+ fr('Q','(3 + 5) × 2 = 20 − ?',['4'],'(3 + 5) × 2 = 16, and 20 − 16 = 4.'),
+ fr('Q','A bakery packs 6 muffins in each box. It sells 7 boxes in the morning and 5 boxes in the afternoon. How many muffins does it sell in all?',['72'],'7 + 5 = 12 boxes. 12 × 6 = 72 muffins.'),
+ fr('Q','Ella reads 15 pages a day for 6 days. Her book has 120 pages. How many pages are left?',['30'],'15 × 6 = 90 pages read. 120 − 90 = 30.'),
+ fr('Q','Challenge: Jay is twice as old as his sister. In 4 years, their ages will add up to 20. How old is Jay now?',['8'],'If his sister is 4, Jay is 8. In 4 years they are 8 and 12, and 8 + 12 = 20.')
+ ]},
+{n:7,title:'Spatial reasoning',area:'N',mode:'practice',
+ blurb:'Picture paper folds, turns, mirror images, and stacks of cubes in your head.',
+ tips:['Paper folding: each fold doubles the layers. A hole through all layers shows up once in every layer when you unfold.','A quarter turn is 90 degrees. Clockwise follows the hands of a clock.','A mirror flips left and right, not top and bottom.','Cubes: a 3 by 3 by 3 block holds 27 small cubes. Count the layers, then multiply.','Try it with real paper. Fold, punch, and predict before you open it.'],
+ ex:{q:'A paper is folded in half and one hole is punched away from the fold. How many holes when unfolded?',a:'The hole goes through two layers, so there are 2 holes, one on each side of the crease.'},
+ qs:[
+ fr('N','A square paper is folded in half, then in half again the same way, making 4 layers. One hole is punched through all the layers, away from the folds. How many holes are there when it is unfolded?',['4'],'Four layers with one hole through each makes 4 holes.'),
+ fr('N','A square paper is folded in half and a hole is punched exactly on the folded edge. How many holes are there when it is unfolded?',['1'],'A hole on the fold opens into one whole hole.'),
+ mc('N','An arrow points right. It is turned a quarter turn clockwise, then another quarter turn clockwise. Which way does it point now?',['Up','Down','Left','Right'],2,'Right turns to down, and down turns to left.'),
+ mc('N','A figure faces north. It makes a quarter turn counterclockwise. Which way does it face now?',['North','South','East','West'],3,'Turning counterclockwise from north points to the west.'),
+ mc('N','A mirror is held against the right side of the lowercase letter "b". Which letter does the reflection look like?',['b','d','p','q'],1,'A mirror flips left and right. A b becomes a d.'),
+ fr('N','A big cube is built from small cubes, 3 across, 3 deep, and 3 high. How many small cubes are there?',['27'],'3 × 3 × 3 = 27.'),
+ fr('N','The outside of that 3 by 3 by 3 cube is painted red, then it is taken apart. How many small cubes have no red paint at all?',['1'],'Only the single cube in the very center has no face on the outside.'),
+ mc('N','Which flat pattern of 6 squares could fold into a cube?',['A row of four squares with one square above the second and one below the second','Six squares in one straight row','Two rows of three squares side by side'],0,'The cross-shaped pattern folds into the six faces of a cube. A single row or a 2 by 3 block cannot.'),
+ mc('N','Which shape has exactly one line of symmetry?',['Square','Isosceles triangle','Circle','Rectangle'],1,'A square has 4 lines of symmetry, a rectangle has 2, and a circle has many. An isosceles triangle has exactly 1.')
+ ]},
+{n:8,title:'Sentence completion and word roots',area:'V',mode:'practice',
+ blurb:'Use clue words and word parts to choose the best word.',
+ tips:['Read the sentence, cover the choices, and guess a word first.','But, although, and however signal a contrast. Because, so, and therefore signal a cause and effect.','Roots: aud = hear, port = carry, scrib/script = write, spect = see, bio = life, tele = far. Prefixes: un- = not, re- = again, pre- = before.','Words to learn: generous, reluctant, abundant, cautious, persistent, scarce.'],
+ ex:{q:'Although the puppy looked fierce, it was actually quite ______.',a:'"Although" signals a contrast with "fierce", so the answer is gentle.'},
+ qs:[
+ mc('V','The desert is so ______ that few plants can survive there.',['wet','dry','crowded','noisy'],1,'Few plants survive where there is little water, so the desert is dry.'),
+ mc('V','Although the test was difficult, Nora stayed ______ and finished every question.',['calm','angry','confused','asleep'],0,'"Although" signals a contrast, so Nora stayed calm even though the test was hard.'),
+ mc('V','Because the road was ______ after the ice storm, cars moved slowly.',['slippery','empty','loud','bright'],0,'Ice makes roads slippery, which is why cars slow down.'),
+ mc('V','The scientist gave a ______ explanation that helped everyone understand the difficult idea.',['confusing','clear','hidden','tiny'],1,'An explanation that helps people understand is clear.'),
+ mc('V','An audience is a group of people who ______.',['speak','listen','sleep','write'],1,'Aud means hear, so an audience listens.'),
+ mc('V','The word "portable" means:',['easy to carry','very heavy','hard to find','made of paper'],0,'Port means carry, and able means can be. Portable means can be carried.'),
+ mc('V','A scribe is a person who ______.',['paints','writes','sings','builds'],1,'Scrib means write.'),
+ mc('V','"Preview" most likely means:',['see before','see again','not see','see clearly'],0,'Pre means before and view means see.'),
+ mc('V','Which one does not belong?',['Generous','Kind','Thoughtful','Greedy'],3,'Generous, kind, and thoughtful describe giving, caring people. Greedy is the opposite.'),
+ mc('V','Drought : Water :: Famine : ?',['Food','Hunger','Farm','Rain'],0,'A drought is a lack of water. A famine is a lack of food.')
+ ]},
+{n:9,title:'Grade 5 math skills',area:'A',mode:'practice',
+ blurb:'Fractions, decimals, order of operations, geometry, and measurement.',
+ tips:['Unlike denominators: rewrite both fractions with the same denominator, then add or subtract the tops.','Decimals: line up the decimal points and add zeros so both numbers have the same number of places.','Order of operations: parentheses first, then multiply and divide, then add and subtract.','Area = length × width. Perimeter = add all the sides. Volume of a box = length × width × height. 1 meter = 100 centimeters.','A point is written (across, up).'],
+ ex:{q:'1/2 + 1/3',a:'Use sixths: 3/6 + 2/6 = 5/6.'},
+ qs:[
+ fr('A','2/3 + 1/6 = ?',['5/6'],'2/3 = 4/6, and 4/6 + 1/6 = 5/6.'),
+ fr('A','3/4 − 1/8 = ?',['5/8'],'3/4 = 6/8, and 6/8 − 1/8 = 5/8.'),
+ fr('A','3 × 2/5 = ? (a fraction or mixed number is fine)',['6/5','1 1/5','1.2'],'3 × 2 = 6, so the answer is 6/5, which is 1 1/5.',{show:'6/5 (or 1 1/5)'}),
+ fr('A','5.6 − 2.35 = ?',['3.25'],'Write 5.60 − 2.35 = 3.25.'),
+ fr('A','A ribbon is 2.5 meters long. How many centimeters is that?',['250'],'1 meter is 100 centimeters. 2.5 × 100 = 250.',{show:'250 cm'}),
+ fr('A','6 + 4 × (8 − 3) = ?',['26'],'Parentheses first: 8 − 3 = 5. Then 4 × 5 = 20. Then 6 + 20 = 26.'),
+ fr('A','A rectangle is 9 cm long and 4 cm wide. What is its area in square centimeters?',['36'],'Area = 9 × 4 = 36.'),
+ fr('A','The same rectangle is 9 cm long and 4 cm wide. What is its perimeter in centimeters?',['26'],'9 + 4 + 9 + 4 = 26.'),
+ fr('A','A rectangular box is 5 cm long, 4 cm wide, and 3 cm tall. What is its volume in cubic centimeters?',['60'],'5 × 4 × 3 = 60.'),
+ fr('A','Point A is at (2, 5). Move it 3 units right and 2 units down. What are the new coordinates? (write like 4,1)',['5,3'],'Right 3 makes the first number 2 + 3 = 5. Down 2 makes the second number 5 − 2 = 3.',{show:'(5, 3)'}),
+ fr('A','A recipe needs 3/4 cup of sugar. Jamal makes half of the recipe. How much sugar does he need? (in cups)',['3/8'],'Half of 3/4 is 3/4 × 1/2 = 3/8.',{show:'3/8 cup'})
+ ]},
+{n:10,title:'Timed mock test',area:'A',mode:'exam',minutes:25,
+ blurb:'A full 20-question test with new questions from all four areas.',
+ tips:['Find a quiet spot and treat this like the real thing. No help and no notes.','Read every direction. Cross out wrong answers before choosing.','Skip hard questions and come back to them. Use leftover time to double check.','If one question feels impossible, take a breath and move on. Most students miss some questions on tests like this.'],
+ ex:{q:'Pacing',a:'25 minutes for 20 questions is about 75 seconds each.'},
+ qs:[
+ mc('V','Seed : Plant :: Egg : ?',['Nest','Bird','Shell','Yolk'],1,'A seed grows into a plant. An egg grows into a bird.'),
+ mc('V','Generous : Selfish :: Brave : ?',['Strong','Cowardly','Loud','Heroic'],1,'Generous and selfish are opposites. The opposite of brave is cowardly.'),
+ mc('V','Which one does not belong?',['Pencil','Marker','Crayon','Eraser'],3,'Pencil, marker, and crayon make marks. An eraser removes them.'),
+ mc('V','Because the storm was growing ______, the sailors hurried back to shore.',['weaker','calmer','stronger','quieter'],2,'Sailors hurry back when a storm is getting stronger.'),
+ mc('V','"Tele" means far and "phone" means sound. A telephone lets you hear sounds from:',['far away','the past','underwater','nearby only'],0,'Tele means far, so a telephone carries sound from far away.'),
+ fr('Q','4, 9, 14, 19, ?',['24'],'Add 5 each time.'),
+ fr('Q','3, 5, 9, 17, ?',['33'],'The jumps double: +2, +4, +8, +16. 17 + 16 = 33.'),
+ fr('Q','? ÷ 4 = 3 × 5',['60'],'3 × 5 = 15, and 15 × 4 = 60.'),
+ fr('Q','6 becomes 36, 7 becomes 49, 9 becomes ?',['81'],'Multiply the number by itself. 9 × 9 = 81.'),
+ fr('Q','A school buys 8 boxes of 24 crayons and shares them equally among 12 classes. How many crayons does each class get?',['16'],'8 × 24 = 192 crayons. 192 ÷ 12 = 16.'),
+ mc('N','Which arrow completes the grid?',['↑','←','↓','↙'],2,'Each step turns the arrow one eighth of a turn clockwise. After ↘ comes ↓.',{grid:[['↑','↗','→'],['↗','→','↘'],['→','↘','?']]}),
+ fr('N','A square paper is folded in half, then in half again. Two holes are punched through all the layers, away from the folds. How many holes are there when it is unfolded?',['8'],'Four layers with two holes through each makes 8 holes.'),
+ fr('N','How many lines of symmetry does a square have?',['4'],'A square has 4: two through the middles of opposite sides and two through opposite corners.'),
+ fr('N','A block is built from small cubes, 4 across, 2 deep, and 3 high. How many small cubes is that?',['24'],'4 × 2 × 3 = 24.'),
+ mc('N','The lowercase letter "p" is turned a half turn (180 degrees). Which lowercase letter does it look like?',['b','d','q','p'],1,'Turned upside down, a p looks like a d.'),
+ mc('A','What is the main idea of the passage?',['Stars are very far away','The ways sailors find direction have changed over time','Compasses are better than satellites','Ocean travel is dangerous'],1,'The passage goes from stars to compasses to satellites.',{p:'ship'}),
+ mc('A','Why was the compass an improvement over using only the North Star?',['It was cheaper','It works when the sky is cloudy','It points south','It was lighter'],1,'The passage says the compass points north even in bad weather, when stars are hidden.',{p:'ship'}),
+ mc('A','Why do many sailors still learn to read the stars?',['The stars are prettier','It is a backup if electronics fail','Satellites do not work at night','It is a rule'],1,'The passage says they learn in case their electronics fail.',{p:'ship'}),
+ fr('A','3/5 + 1/10 = ?',['7/10'],'3/5 = 6/10, and 6/10 + 1/10 = 7/10.'),
+ fr('A','A rectangle has a perimeter of 30 cm and a length of 9 cm. What is its width in centimeters?',['6'],'Length plus width is half the perimeter, which is 15. 15 − 9 = 6.')
+ ]}
+];
+
+/* ---------- storage ---------- */
+var KEY='grade5-brain-gym-v1';
+function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):{}}catch(e){return {}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+var store=load();
+
+/* ---------- helpers ---------- */
+function h(tag,props){
+  var e=document.createElement(tag),k,v,i,kids=Array.prototype.slice.call(arguments,2);
+  props=props||{};
+  for(k in props){v=props[k];
+    if(k==='class')e.className=v;
+    else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,'');
+    else if(v!==false&&v!=null)e.setAttribute(k,v);
+  }
+  (function add(list){for(i=0;i<list.length;i++){var c=list[i];
+    if(c==null||c===false)continue;
+    if(Array.isArray(c))add(c);
+    else e.appendChild(c.nodeType?c:document.createTextNode(String(c)));
+  }})(kids);
+  return e;
+}
+function norm(s){return String(s==null?'':s).toLowerCase().replace(/[()$]/g,'').replace(/\s*,\s*/g,',').replace(/\s+/g,' ').trim().replace(/\.$/,'');}
+function isRight(q,v){
+  if(q.t==='mc')return v===q.a;
+  if(q.t==='self')return v==='got';
+  var u=norm(v);if(!u)return false;
+  return q.acc.some(function(a){a=norm(a);return u===a||u.indexOf(a+' ')===0;});
+}
+function answered(q,v){
+  if(q.t==='mc')return typeof v==='number';
+  if(q.t==='free')return !!norm(v);
+  return !!v;
+}
+function showAnswer(q){
+  if(q.t==='mc')return String.fromCharCode(65+q.a)+'. '+q.opts[q.a];
+  if(q.t==='free')return q.show||q.acc[0];
+  return q.sample;
+}
+function fmt(s){var m=Math.floor(s/60),r=s%60;return m+':'+(r<10?'0':'')+r;}
+function chip(area){return h('span',{class:'chip area-'+area},AREAS[area]);}
+
+/* ---------- state ---------- */
+var app=document.getElementById('app');
+var S={view:'home',day:null,idx:0,ans:[],chk:[],t0:0,timer:null,confirm:'',result:null};
+
+function go(view,day){
+  clearInterval(S.timer);S.timer=null;S.view=view;S.confirm='';
+  if(day!==undefined)S.day=day;
+  render();window.scrollTo(0,0);
+}
+function render(){
+  app.textContent='';
+  if(S.view==='home')app.appendChild(viewHome());
+  else if(S.view==='learn')app.appendChild(viewLearn());
+  else if(S.view==='quiz')app.appendChild(viewQuiz());
+  else if(S.view==='results')app.appendChild(viewResults());
+}
+
+/* ---------- home ---------- */
+function areaTotals(){
+  var t={V:[0,0],Q:[0,0],N:[0,0],A:[0,0]};
+  DAYS.forEach(function(d){var r=store[d.n];if(!r||!r.areas)return;
+    for(var k in r.areas){t[k][0]+=r.areas[k][0];t[k][1]+=r.areas[k][1];}});
+  return t;
+}
+function viewHome(){
+  var done=DAYS.filter(function(d){return store[d.n]}).length;
+  var tot=areaTotals();
+  var skills=Object.keys(AREAS).map(function(k){
+    var c=tot[k][0],n=tot[k][1],pct=n?Math.round(c/n*100):0;
+    return h('div',{class:'skill area-'+k},
+      h('div',{class:'row'},h('span',null,AREAS[k]),h('span',{class:'muted'},n?c+' of '+n:'Not started')),
+      h('div',{class:'bar',role:'img','aria-label':AREAS[k]+' '+pct+' percent'},h('i',{style:'width:'+pct+'%'})));
+  });
+  var cards=DAYS.map(function(d){
+    var r=store[d.n];
+    return h('button',{class:'day',onclick:function(){go('learn',d)},'aria-label':'Day '+d.n+': '+d.title},
+      h('span',{class:'num'},'Day '+d.n),
+      h('h3',null,d.title),
+      h('p',{class:'muted small'},d.blurb),
+      h('div',{class:'meta'},chip(d.area),d.mode==='exam'?h('span',{class:'chip timed'},'Timed · '+d.minutes+' min'):null),
+      h('div',{class:'foot'},
+        h('span',null,d.qs.length+' questions'),
+        r?h('span',{class:'done'},'Best '+r.best+' of '+r.total):h('span',null,'Not started')));
+  });
+  var reset=h('button',{class:'link',onclick:function(e){
+    if(e.currentTarget.dataset.sure){store={};save(store);render();}
+    else{e.currentTarget.dataset.sure='1';e.currentTarget.textContent='Tap again to clear all saved scores';}
+  }},'Clear saved scores');
+  return h('div',null,
+    h('div',{class:'hero'},
+      h('div',null,h('div',{class:'eyebrow'},'Gifted program prep'),h('h1',null,'Grade 5 Brain Gym'),
+        h('p',{class:'muted'},'Ten short days of practice in verbal, number, picture, and reading skills. Pick a day, read the quick tips, then answer the questions.')),
+      h('div',{class:'meter'},h('span',{class:'muted small'},'Days finished'),h('b',null,done+' of 10'),
+        h('div',{class:'bar',role:'img','aria-label':done+' of 10 days finished'},h('i',{style:'width:'+(done*10)+'%'})))),
+    h('div',{class:'panel'},h('h2',null,'My skills'),
+      done?h('p',{class:'muted small'},'Based on your latest try of each day.'):h('p',{class:'muted small'},'Finish a day and your scores for each skill show up here.'),
+      h('div',{class:'skills'},skills)),
+    h('h2',{class:'section-title'},'The 10 days'),
+    h('div',{class:'days'},cards),
+    h('p',{class:'muted small',style:'margin-top:24px'},'Scores save in this browser on this device. ',reset));
+}
+
+/* ---------- lesson ---------- */
+function viewLearn(){
+  var d=S.day,exam=d.mode==='exam';
+  return h('div',{class:'lesson'},
+    h('div',{class:'topbar'},h('button',{class:'btn ghost',onclick:function(){go('home')}},'← All days')),
+    h('div',null,h('div',{class:'eyebrow'},'Day '+d.n),h('h1',null,d.title),
+      h('div',{style:'margin-top:8px;display:flex;gap:6px;flex-wrap:wrap'},chip(d.area),exam?h('span',{class:'chip timed'},'Timed · '+d.minutes+' min'):null)),
+    h('div',{class:'panel'},h('h2',null,exam?'Before you start':'Learn first'),
+      h('ul',null,d.tips.map(function(t){return h('li',null,t)}))),
+    h('div',{class:'example'},h('div',{class:'eyebrow'},exam?d.ex.q:'Worked example'),
+      exam?h('div',{class:'a'},d.ex.a):h('div',null,h('div',{style:'margin-top:4px;font-weight:700'},d.ex.q),h('div',{class:'a'},d.ex.a))),
+    h('div',{class:'actions'},
+      h('button',{class:'btn',onclick:function(){startQuiz(d)}},exam?'Start the timer':'Start practice'),
+      h('span',{class:'muted small'},exam?'No feedback until you finish.':d.qs.length+' questions, about 12 minutes. You see the answer after each one.')));
+}
+
+/* ---------- quiz ---------- */
+function startQuiz(d){
+  S.day=d;S.idx=0;S.ans=d.qs.map(function(){return null});S.chk=d.qs.map(function(){return false});
+  S.t0=Date.now();S.result=null;
+  go('quiz',d);
+  S.timer=setInterval(tick,1000);
+}
+function elapsed(){return Math.floor((Date.now()-S.t0)/1000);}
+function tick(){
+  var el=document.getElementById('clock');if(!el)return;
+  var d=S.day;
+  if(d.mode==='exam'){
+    var left=d.minutes*60-elapsed();
+    el.textContent=fmt(Math.max(left,0));
+    el.classList.toggle('low',left<=60);
+    if(left<=0)finish();
+  }else el.textContent=fmt(elapsed());
+}
+function setAns(v,check){
+  S.ans[S.idx]=v;if(check)S.chk[S.idx]=true;render();
+}
+function viewQuiz(){
+  var d=S.day,q=d.qs[S.idx],exam=d.mode==='exam',v=S.ans[S.idx],checked=S.chk[S.idx];
+  var locked=!exam&&checked;
+  var head=h('div',{class:'topbar'},
+    h('button',{class:'btn ghost',onclick:function(){
+      if(exam&&S.confirm!=='leave'){S.confirm='leave';render();return;}
+      go('home');}},S.confirm==='leave'?'Tap again to leave without scoring':'← Leave'),
+    h('span',{class:'clock',id:'clock',role:'timer','aria-label':exam?'Time left':'Time so far'},exam?fmt(d.minutes*60):'0:00'));
+  var prog=h('div',null,
+    h('div',{class:'qhead'},h('span',null,'Day '+d.n+' · Question '+(S.idx+1)+' of '+d.qs.length),chip(q.area)),
+    h('div',{class:'bar',role:'progressbar','aria-valuemin':0,'aria-valuemax':d.qs.length,'aria-valuenow':S.idx+1},h('i',{style:'width:'+((S.idx+1)/d.qs.length*100)+'%'})));
+
+  var body=[];
+  if(q.p)body.push(h('div',{class:'passage area-'+q.area},PASS[q.p].split('\n\n').map(function(p,i){return h('p',{style:i?'margin-top:10px':''},p)})));
+  body.push(h('div',{class:'qtext'},q.q));
+  if(q.grid)body.push(h('div',{class:'grid3',role:'img','aria-label':'Grid puzzle: '+q.grid.map(function(r){return r.join(', ')}).join('; ')},
+    q.grid.reduce(function(a,r){return a.concat(r)},[]).map(function(c){return h('div',{class:'cell'+(c==='?'?' q':'')+(c.length>3&&c!=='?'?' long':'')},c)})));
+
+  if(q.t==='mc'){
+    body.push(h('div',{class:'opts'},q.opts.map(function(o,i){
+      var cls='opt';
+      if(locked){if(i===q.a)cls+=' right';else if(i===v)cls+=' wrong';}
+      else if(v===i)cls+=' sel';
+      return h('button',{class:cls,disabled:locked,'aria-pressed':v===i?'true':'false',onclick:function(){
+        if(exam)setAns(i,false);else setAns(i,true);}},
+        h('span',{class:'L'},String.fromCharCode(65+i)),h('span',null,o));
+    })));
+  }else if(q.t==='free'){
+    var inp=h('input',{id:'free',type:'text',inputmode:'text',autocomplete:'off',autocapitalize:'off',spellcheck:'false',
+      placeholder:'Type your answer',value:v==null?'':v,disabled:locked,'aria-label':'Your answer',
+      oninput:function(e){S.ans[S.idx]=e.target.value;if(exam)updateDots();checkBtnState();},
+      onkeydown:function(e){if(e.key==='Enter'&&!exam&&!locked&&norm(inp.value))setAns(inp.value,true);}});
+    var cb=h('button',{class:'btn',id:'checkbtn',disabled:!norm(v),onclick:function(){setAns(inp.value,true)}},'Check');
+    body.push(h('div',{class:'ans'},inp,exam||locked?null:cb));
+    if(!exam&&!locked)setTimeout(function(){var f=document.getElementById('free');if(f)f.focus();},0);
+  }else if(q.t==='self'){
+    if(!checked&&v!=='peek')body.push(h('p',{class:'muted small'},'Think of your answer first (or write it on paper), then check it.'),h('div',{class:'actions'},h('button',{class:'btn',onclick:function(){S.ans[S.idx]='peek';render();}},'Show a sample answer')));
+    else if(!checked)body.push(h('div',{class:'fb'},h('strong',null,'Sample answer'),h('span',null,q.sample.replace('Sample answer: ','')),
+      h('p',{class:'muted small',style:'margin-top:6px'},'Did your answer say about the same thing?'),
+      h('div',{class:'actions',style:'margin-top:6px'},
+        h('button',{class:'btn',onclick:function(){S.ans[S.idx]='got';S.chk[S.idx]=true;render();}},'Yes, I got it'),
+        h('button',{class:'btn ghost',onclick:function(){S.ans[S.idx]='not';S.chk[S.idx]=true;render();}},'Not yet'))));
+  }
+  if(q.t==='self'&&checked){body.push(h('div',{class:'fb '+(v==='got'?'ok':'no')},h('strong',null,v==='got'?'Nice work':'Good to know'),h('span',null,q.sample)));}
+  if(!exam&&checked&&q.t!=='self'){
+    var ok=isRight(q,v);
+    body.push(h('div',{class:'fb '+(ok?'ok':'no'),role:'status'},
+      h('strong',null,ok?'Correct':'Not quite'),
+      ok?null:h('span',null,'The answer is '+showAnswer(q)+'.'),
+      h('span',{class:'muted'},q.why)));
+  }
+
+  var last=S.idx===d.qs.length-1;
+  var foot=h('div',{class:'qfoot'});
+  if(exam){
+    foot.appendChild(h('button',{class:'btn ghost',disabled:S.idx===0,onclick:function(){S.idx--;S.confirm='';render();}},'← Back'));
+    var right=h('div',{class:'actions'});
+    if(!last)right.appendChild(h('button',{class:'btn ghost',onclick:function(){S.idx++;S.confirm='';render();}},'Next →'));
+    var un=S.ans.filter(function(a,i){return !answered(d.qs[i],a)}).length;
+    right.appendChild(h('button',{class:'btn',onclick:function(){
+      if(S.confirm==='submit'){finish();}else{S.confirm='submit';render();}}},
+      S.confirm==='submit'?(un?'Yes, finish ('+un+' blank)':'Yes, finish'):'Finish test'));
+    foot.appendChild(right);
+  }else{
+    foot.appendChild(h('span'));
+    foot.appendChild(h('button',{class:'btn',disabled:!checked,onclick:function(){
+      if(last)finish();else{S.idx++;render();}}},last?'See results':'Next question →'));
+  }
+  var nav=null;
+  if(exam){
+    nav=h('div',{class:'qnav',role:'group','aria-label':'Jump to question'},d.qs.map(function(qq,i){
+      return h('button',{class:'dot'+(answered(qq,S.ans[i])?' has':'')+(i===S.idx?' cur':''),'data-i':i,'aria-label':'Question '+(i+1)+(answered(qq,S.ans[i])?', answered':''),onclick:function(){S.idx=i;S.confirm='';render();}},i+1);
+    }));
+  }
+  var out=h('div',null,head,prog,h('div',{class:'qcard'},body),nav,foot);
+  setTimeout(tick,0);
+  return out;
+}
+function checkBtnState(){var b=document.getElementById('checkbtn');if(b)b.disabled=!norm(S.ans[S.idx]);}
+function updateDots(){
+  var d=S.day;
+  document.querySelectorAll('.dot').forEach(function(b){var i=+b.getAttribute('data-i');
+    b.classList.toggle('has',answered(d.qs[i],S.ans[i]));});
+}
+
+/* ---------- results ---------- */
+function finish(){
+  clearInterval(S.timer);S.timer=null;
+  var d=S.day,areas={},correct=0,missed=[];
+  d.qs.forEach(function(q,i){
+    var ok=isRight(q,S.ans[i]);
+    areas[q.area]=areas[q.area]||[0,0];areas[q.area][1]++;
+    if(ok){areas[q.area][0]++;correct++;}else missed.push(i);
+  });
+  var prev=store[d.n]||{};
+  store[d.n]={best:Math.max(prev.best||0,correct),total:d.qs.length,last:correct,areas:areas,secs:elapsed(),date:new Date().toISOString().slice(0,10),tries:(prev.tries||0)+1};
+  save(store);
+  S.result={correct:correct,total:d.qs.length,areas:areas,missed:missed,secs:elapsed()};
+  go('results');
+}
+function viewResults(){
+  var d=S.day,r=S.result,pct=Math.round(r.correct/r.total*100);
+  var msg=pct>=90?'Excellent work.':pct>=70?'Solid. Look over the ones you missed.':'Good effort. Read the tips again and retry.';
+  var ar=Object.keys(r.areas).map(function(k){
+    var c=r.areas[k][0],n=r.areas[k][1];
+    return h('div',{class:'skill area-'+k},h('div',{class:'row'},h('span',null,AREAS[k]),h('span',{class:'muted'},c+' of '+n)),
+      h('div',{class:'bar',role:'img','aria-label':AREAS[k]+' '+c+' of '+n},h('i',{style:'width:'+(c/n*100)+'%'})));
+  });
+  var rev=r.missed.map(function(i){
+    var q=d.qs[i],v=S.ans[i];
+    var yours=q.t==='mc'?(typeof v==='number'?String.fromCharCode(65+v)+'. '+q.opts[v]:'No answer'):(q.t==='free'?(norm(v)?v:'No answer'):(v==='not'?'Not yet':'No answer'));
+    return h('div',{class:'rv'},
+      h('div',{class:'eyebrow'},'Question '+(i+1)+' · '+AREAS[q.area]),
+      q.p?h('div',{class:'muted small'},'Reading passage question'):null,
+      h('div',{class:'q'},q.q+(q.grid?'  (grid: '+q.grid.map(function(x){return x.join(' | ')}).join(' / ')+')':'')),
+      q.t==='self'?null:h('div',{class:'small'},'Your answer: ',h('b',null,yours)),
+      h('div',{class:'small'},'Answer: ',h('b',null,showAnswer(q))),
+      h('div',{class:'muted small'},q.why));
+  });
+  var next=DAYS[d.n];
+  return h('div',null,
+    h('div',{class:'topbar'},h('button',{class:'btn ghost',onclick:function(){go('home')}},'← All days')),
+    h('div',{class:'panel'},
+      h('div',{class:'eyebrow'},'Day '+d.n+' results'),
+      h('div',{class:'score',style:'margin-top:8px'},
+        h('div',{class:'big'},r.correct+' / '+r.total),
+        h('div',null,h('h2',null,msg),h('p',{class:'muted'},'Time: '+fmt(r.secs)+(d.mode==='exam'&&r.secs>=d.minutes*60?' (time ran out)':'')))),
+      h('div',{class:'skills'},ar)),
+    r.missed.length?h('div',null,h('h2',{class:'section-title'},'Questions to review ('+r.missed.length+')'),h('div',{class:'review'},rev)):
+      h('div',{class:'panel',style:'margin-top:14px'},h('h3',null,'Every answer was right.'),h('p',{class:'muted'},'Try the next day, or retry this one to beat your time.')),
+    h('div',{class:'actions',style:'margin-top:20px'},
+      next?h('button',{class:'btn',onclick:function(){go('learn',next)}},'Day '+next.n+': '+next.title):h('button',{class:'btn',onclick:function(){go('home')}},'Back to all days'),
+      h('button',{class:'btn ghost',onclick:function(){startQuiz(d)}},'Retry this day')));
+}
+
+render();
+})();
+</script>
+
+</body>
+</html>
