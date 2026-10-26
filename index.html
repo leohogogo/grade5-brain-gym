@@ -363,7 +363,7 @@ function mine(){return (store.data&&store.data[store.active])||{};}
 /* ---------- automatic report to a Google Sheet ---------- */
 var SHEET_URL=/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/;
 /* Built-in link to the family Google Sheet. A link saved in Parent settings overrides it on that device. */
-var DEFAULT_REPORT_URL='https://script.google.com/macros/s/AKfycbwuIypygTWp8iRj5DtczC01utAuZCWetlJVnPmz9gkQDRhlkkva1zVOXyaU3ulkdxt_/exec';
+var DEFAULT_REPORT_URL='https://script.google.com/macros/s/AKfycbzJi3IEz_SHsjUgNFiudldBTdHJrzy4FqI1m6rwE_akik1stREc2iqVoKxFc6OiS6GT/exec';
 function reportUrl(){var u='';try{u=localStorage.getItem(KEY+'-report')||''}catch(e){}if(!SHEET_URL.test(u))u=DEFAULT_REPORT_URL;return SHEET_URL.test(u)?u:'';}
 function postRow(u,body){
   var ctrl=window.AbortController?new AbortController():null,to=setTimeout(function(){if(ctrl)ctrl.abort();},15000);
