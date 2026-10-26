@@ -362,7 +362,9 @@ function mine(){return (store.data&&store.data[store.active])||{};}
 
 /* ---------- automatic report to a Google Sheet ---------- */
 var SHEET_URL=/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/;
-function reportUrl(){var u='';try{u=localStorage.getItem(KEY+'-report')||''}catch(e){}return SHEET_URL.test(u)?u:'';}
+/* Built-in link to the family Google Sheet. A link saved in Parent settings overrides it on that device. */
+var DEFAULT_REPORT_URL='https://script.google.com/macros/s/AKfycbwuIypygTWp8iRj5DtczC01utAuZCWetlJVnPmz9gkQDRhlkkva1zVOXyaU3ulkdxt_/exec';
+function reportUrl(){var u='';try{u=localStorage.getItem(KEY+'-report')||''}catch(e){}if(!SHEET_URL.test(u))u=DEFAULT_REPORT_URL;return SHEET_URL.test(u)?u:'';}
 function postRow(u,body){
   var ctrl=window.AbortController?new AbortController():null,to=setTimeout(function(){if(ctrl)ctrl.abort();},15000);
   /* Google Apps Script does not allow reading the reply from another site, so this only knows whether the request left the device. */
@@ -408,7 +410,7 @@ function parentSettings(){
     if(v&&!SHEET_URL.test(v)){status.textContent='That does not look right. The link should start with https://script.google.com/macros/s/ and end with /exec';return;}
     try{if(v)localStorage.setItem(KEY+'-report',v);else localStorage.removeItem(KEY+'-report');}
     catch(e){status.textContent='This browser would not save the link.';return;}
-    status.textContent=v?'Saved. Her score is added to your sheet after each finished day.':'Automatic reports are off.';
+    status.textContent=v?'Saved. Her score is added to your sheet after each finished day.':'Using the built-in link again.';
   }},'Save');
   var test=h('button',{class:'btn ghost',onclick:function(){
     var v=inp.value.trim();
@@ -419,7 +421,7 @@ function parentSettings(){
   }},'Send test row');
   return h('details',{class:'panel settings'},
     h('summary',null,'Parent settings'),
-    h('p',{class:'muted small'},'After each finished day, the score, skill results, and missed questions are added as a row in your Google Sheet, under the first name picked on the Who\'s practicing screen. Nothing else personal is sent. Paste your link here once on each device that should report.'),
+    h('p',{class:'muted small'},'After each finished day, the score, skill results, and missed questions are added as a row in your Google Sheet, under the first name picked on the Who\'s practicing screen. Nothing else personal is sent. The link is already built in, so nothing is needed here. You can send a test row, or paste a different link to use on this device.'),
     inp,h('div',{class:'actions'},save,test),status);
 }
 
