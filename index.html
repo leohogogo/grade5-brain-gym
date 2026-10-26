@@ -124,6 +124,22 @@ button{font:inherit;color:inherit;cursor:pointer}
 .rv{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
 .rv .q{font-weight:800;overflow-wrap:anywhere}
 .small{font-size:.92rem}
+.whobar{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.avatar{display:inline-flex;align-items:center;justify-content:center;flex:none;width:46px;height:46px;border-radius:50%;background:var(--c,var(--accent));color:var(--bg);font-family:var(--font-display);font-weight:600;font-size:1.35rem}
+.avatar.sm{width:32px;height:32px;font-size:1rem}
+.who-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
+.who-row{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.who-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:18px;border:2px solid var(--line);background:var(--surface)}
+.who-card:hover{border-color:var(--c)}
+.who-name{font-family:var(--font-display);font-size:1.25rem;font-weight:600;flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.who-add{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.who-add input{flex:1 1 200px;min-width:0;min-height:50px;padding:8px 14px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;font-size:1.1rem;font-weight:700}
+.who-add input:focus{border-color:var(--accent);outline:none}
+.settings summary{cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:1.05rem}
+.settings[open] summary{margin-bottom:8px}
+.settings input{display:block;width:100%;min-height:46px;margin:12px 0;padding:8px 14px;border-radius:14px;border:2px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.settings input:focus{border-color:var(--accent);outline:none}
+#sentnote{margin-top:12px}
 @media (max-width:520px){
   h1{font-size:1.65rem} .qtext{font-size:1.2rem} .big{font-size:2.6rem} .qcard{padding:16px}
   .opts{grid-template-columns:1fr}
@@ -331,6 +347,81 @@ var KEY='grade5-brain-gym-v1';
 function load(){try{var r=localStorage.getItem(KEY);return r?JSON.parse(r):{}}catch(e){return {}}}
 function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
 var store=load();
+/* store = {profiles:[{id,name,color}], active:id, data:{id:{dayNumber:{...}}}} */
+(function migrate(){
+  if(store&&store.profiles)return;
+  var old={},has=false,k;
+  for(k in store){if(/^\d+$/.test(k)){old[k]=store[k];has=true;}}
+  store={profiles:[],active:null,data:{}};
+  if(has){store.profiles.push({id:'p0',name:'Me',color:0});store.active='p0';store.data.p0=old;}
+  save(store);
+})();
+var COLORS=['--v','--q','--n','--a'],MAXKIDS=5;
+function me(){var p=null;store.profiles.forEach(function(x){if(x.id===store.active)p=x;});return p;}
+function mine(){return (store.data&&store.data[store.active])||{};}
+
+/* ---------- automatic report to a Google Sheet ---------- */
+var SHEET_URL=/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/;
+function reportUrl(){var u='';try{u=localStorage.getItem(KEY+'-report')||''}catch(e){}return SHEET_URL.test(u)?u:'';}
+function postRow(u,body){
+  var ctrl=window.AbortController?new AbortController():null,to=setTimeout(function(){if(ctrl)ctrl.abort();},15000);
+  /* Google Apps Script does not allow reading the reply from another site, so this only knows whether the request left the device. */
+  return fetch(u,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body),signal:ctrl?ctrl.signal:undefined})
+    .then(function(){clearTimeout(to);return true;}).catch(function(){clearTimeout(to);return false;});
+}
+function yourAnswer(q,v){
+  if(q.t==='mc')return typeof v==='number'?String.fromCharCode(65+v)+'. '+q.opts[v]:'No answer';
+  if(q.t==='free')return norm(v)?String(v).trim():'No answer';
+  return v==='not'?'Not yet':'No answer';
+}
+function shorten(s,n){return s.length>n?s.slice(0,n-1)+'…':s;}
+function buildRow(d,r){
+  var miss=r.missed.map(function(i){var q=d.qs[i];
+    return 'Q'+(i+1)+' ('+AREAS[q.area]+'): '+shorten(q.q,90)+(q.t==='mc'&&q.q.length<35?' ['+q.opts.join(' / ')+']':'')+' | her answer: '+yourAnswer(q,S.ans[i])+' | correct: '+showAnswer(q);
+  }).join('\n');
+  return {student:me()?me().name:'',day:d.n,title:d.title,mode:d.mode==='exam'?'Timed':'Practice',score:r.correct,total:r.total,minutes:Math.round(r.secs/6)/10,areas:r.areas,missed:miss||'None'};
+}
+function sendReport(d,r){
+  var u=reportUrl();S.sent='';
+  if(!u)return;
+  S.sent='sending';
+  postRow(u,buildRow(d,r)).then(function(ok){
+    S.sent=ok?'ok':'fail';
+    if(S.view==='results'){var el=document.getElementById('sentnote');if(el)el.replaceWith(sentNode());}
+  });
+}
+function sentNode(){
+  var n=h('p',{class:'muted small',id:'sentnote',role:'status'});
+  if(S.sent==='sending')n.textContent='Sending her score to your parent…';
+  else if(S.sent==='ok')n.textContent='Score sent to your parent.';
+  else if(S.sent==='fail'){n.appendChild(document.createTextNode('The score could not be sent. It is saved on this device. '));
+    n.appendChild(h('button',{class:'link',onclick:function(){S.sent='sending';n.textContent='Sending her score to your parent…';sendReport(S.day,S.result);}},'Try again'));}
+  else n.hidden=true;
+  return n;
+}
+function parentSettings(){
+  var cur=reportUrl();
+  var status=h('p',{class:'small',role:'status'},cur?'Automatic reports are on.':'Automatic reports are off.');
+  var inp=h('input',{id:'reporturl',type:'url',placeholder:'https://script.google.com/macros/s/.../exec',value:cur,autocomplete:'off','aria-label':'Google Sheet link'});
+  var save=h('button',{class:'btn ghost',onclick:function(){
+    var v=inp.value.trim();
+    if(v&&!SHEET_URL.test(v)){status.textContent='That does not look right. The link should start with https://script.google.com/macros/s/ and end with /exec';return;}
+    try{if(v)localStorage.setItem(KEY+'-report',v);else localStorage.removeItem(KEY+'-report');}
+    catch(e){status.textContent='This browser would not save the link.';return;}
+    status.textContent=v?'Saved. Her score is added to your sheet after each finished day.':'Automatic reports are off.';
+  }},'Save');
+  var test=h('button',{class:'btn ghost',onclick:function(){
+    var v=inp.value.trim();
+    if(!SHEET_URL.test(v)){status.textContent='Paste the link from Google first.';return;}
+    status.textContent='Sending a test…';
+    postRow(v,{test:true,student:me()?me().name:'Test'}).then(function(ok){
+      status.textContent=ok?'Test sent. Open your Google Sheet: a row marked Test should appear within a few seconds.':'The test could not be sent. Check the link and the internet connection.';});
+  }},'Send test row');
+  return h('details',{class:'panel settings'},
+    h('summary',null,'Parent settings'),
+    h('p',{class:'muted small'},'After each finished day, the score, skill results, and missed questions are added as a row in your Google Sheet, under the first name picked on the Who\'s practicing screen. Nothing else personal is sent. Paste your link here once on each device that should report.'),
+    inp,h('div',{class:'actions'},save,test),status);
+}
 
 /* ---------- helpers ---------- */
 function h(tag,props){
@@ -372,6 +463,7 @@ function chip(area){return h('span',{class:'chip area-'+area},AREAS[area]);}
 /* ---------- state ---------- */
 var app=document.getElementById('app');
 var S={view:'home',day:null,idx:0,ans:[],chk:[],t0:0,timer:null,confirm:'',result:null};
+if(!me())S.view='who';
 
 function go(view,day){
   clearInterval(S.timer);S.timer=null;S.view=view;S.confirm='';
@@ -380,21 +472,69 @@ function go(view,day){
 }
 function render(){
   app.textContent='';
-  if(S.view==='home')app.appendChild(viewHome());
+  if(S.view==='who')app.appendChild(viewWho());
+  else if(S.view==='home')app.appendChild(viewHome());
   else if(S.view==='learn')app.appendChild(viewLearn());
   else if(S.view==='quiz')app.appendChild(viewQuiz());
   else if(S.view==='results')app.appendChild(viewResults());
 }
 
+/* ---------- who is practicing ---------- */
+function avatar(p,small){return h('span',{class:'avatar'+(small?' sm':''),style:'--c:var('+COLORS[p.color%4]+')','aria-hidden':'true'},p.name.charAt(0).toUpperCase());}
+function whoBar(){
+  var p=me();
+  return h('div',{class:'whobar'},avatar(p,true),h('span',null,'Practicing as ',h('b',null,p.name)),
+    h('button',{class:'link',onclick:function(){go('who')}},'Switch'));
+}
+function viewWho(){
+  var list=store.profiles;
+  var msg=h('p',{class:'small muted',role:'status'});
+  var inp=h('input',{id:'newname',type:'text',maxlength:'14',placeholder:'First name or nickname',autocomplete:'off','aria-label':'Your name'});
+  function add(){
+    var v=inp.value.trim();
+    if(!v){msg.textContent='Type a name first.';return;}
+    if(list.some(function(p){return p.name.toLowerCase()===v.toLowerCase();})){msg.textContent='That name is already on the list. Tap it above.';return;}
+    var id='p'+Date.now().toString(36);
+    store.profiles.push({id:id,name:v,color:store.profiles.length%4});
+    store.data[id]={};store.active=id;save(store);go('home');
+  }
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')add();});
+  var cards=list.map(function(p){
+    var done=Object.keys(store.data[p.id]||{}).length;
+    return h('div',{class:'who-row'},
+      h('button',{class:'who-card',style:'--c:var('+COLORS[p.color%4]+')',onclick:function(){store.active=p.id;save(store);go('home');}},
+        avatar(p),h('span',{class:'who-name'},p.name),h('span',{class:'muted small'},done+' of 10 days')),
+      h('button',{class:'link small',onclick:function(e){
+        var b=e.currentTarget;
+        if(b.dataset.sure){
+          store.profiles=store.profiles.filter(function(x){return x.id!==p.id;});delete store.data[p.id];
+          if(store.active===p.id)store.active=null;save(store);
+          if(me())render();else{S.view='who';render();}
+        }else{b.dataset.sure='1';b.textContent='Tap again to remove '+p.name+' and their scores';}
+      }},'Remove'));
+  });
+  var addBox=list.length>=MAXKIDS
+    ?h('p',{class:'muted'},'The list is full ('+MAXKIDS+' names). Remove one to add another.')
+    :h('div',{class:'panel',style:'margin-top:16px'},h('h3',null,list.length?'Add another name':'Type your name to begin'),
+        h('div',{class:'who-add'},inp,h('button',{class:'btn',onclick:add},'Add')),msg);
+  return h('div',null,
+    me()?h('div',{class:'topbar'},h('button',{class:'btn ghost',onclick:function(){go('home')}},'← Back')):null,
+    h('div',{class:'eyebrow'},'Gifted program prep by Leo'),
+    h('h1',null,'Who\'s practicing?'),
+    h('p',{class:'muted',style:'margin-top:6px'},'Pick your name so your scores stay under it on this device. Only a first name or nickname is needed.'),
+    cards.length?h('div',{class:'who-list'},cards):null,
+    addBox);
+}
+
 /* ---------- home ---------- */
 function areaTotals(){
   var t={V:[0,0],Q:[0,0],N:[0,0],A:[0,0]};
-  DAYS.forEach(function(d){var r=store[d.n];if(!r||!r.areas)return;
+  DAYS.forEach(function(d){var r=mine()[d.n];if(!r||!r.areas)return;
     for(var k in r.areas){t[k][0]+=r.areas[k][0];t[k][1]+=r.areas[k][1];}});
   return t;
 }
 function viewHome(){
-  var done=DAYS.filter(function(d){return store[d.n]}).length;
+  var done=DAYS.filter(function(d){return mine()[d.n]}).length;
   var tot=areaTotals();
   var skills=Object.keys(AREAS).map(function(k){
     var c=tot[k][0],n=tot[k][1],pct=n?Math.round(c/n*100):0;
@@ -403,7 +543,7 @@ function viewHome(){
       h('div',{class:'bar',role:'img','aria-label':AREAS[k]+' '+pct+' percent'},h('i',{style:'width:'+pct+'%'})));
   });
   var cards=DAYS.map(function(d){
-    var r=store[d.n];
+    var r=mine()[d.n];
     return h('button',{class:'day',onclick:function(){go('learn',d)},'aria-label':'Day '+d.n+': '+d.title},
       h('span',{class:'num'},'Day '+d.n),
       h('h3',null,d.title),
@@ -414,10 +554,11 @@ function viewHome(){
         r?h('span',{class:'done'},'Best '+r.best+' of '+r.total):h('span',null,'Not started')));
   });
   var reset=h('button',{class:'link',onclick:function(e){
-    if(e.currentTarget.dataset.sure){store={};save(store);render();}
-    else{e.currentTarget.dataset.sure='1';e.currentTarget.textContent='Tap again to clear all saved scores';}
+    if(e.currentTarget.dataset.sure){store.data[store.active]={};save(store);render();}
+    else{e.currentTarget.dataset.sure='1';e.currentTarget.textContent='Tap again to clear '+me().name+'\'s saved scores';}
   }},'Clear saved scores');
   return h('div',null,
+    whoBar(),
     h('div',{class:'hero'},
       h('div',null,h('div',{class:'eyebrow'},'Gifted program prep by Leo'),h('h1',null,'Grade 5 Brain Gym'),
         h('p',{class:'muted'},'Ten short days of practice in verbal, number, picture, and reading skills. Pick a day, read the quick tips, then answer the questions.')),
@@ -428,7 +569,8 @@ function viewHome(){
       h('div',{class:'skills'},skills)),
     h('h2',{class:'section-title'},'The 10 days'),
     h('div',{class:'days'},cards),
-    h('p',{class:'muted small',style:'margin-top:24px'},'Scores save in this browser on this device. ',reset));
+    h('p',{class:'muted small',style:'margin-top:24px'},'Scores save in this browser on this device. ',reset),
+    h('div',{style:'margin-top:16px'},parentSettings()));
 }
 
 /* ---------- lesson ---------- */
@@ -562,10 +704,12 @@ function finish(){
     areas[q.area]=areas[q.area]||[0,0];areas[q.area][1]++;
     if(ok){areas[q.area][0]++;correct++;}else missed.push(i);
   });
-  var prev=store[d.n]||{};
-  store[d.n]={best:Math.max(prev.best||0,correct),total:d.qs.length,last:correct,areas:areas,secs:elapsed(),date:new Date().toISOString().slice(0,10),tries:(prev.tries||0)+1};
+  store.data[store.active]=store.data[store.active]||{};
+  var prev=store.data[store.active][d.n]||{};
+  store.data[store.active][d.n]={best:Math.max(prev.best||0,correct),total:d.qs.length,last:correct,areas:areas,secs:elapsed(),date:new Date().toISOString().slice(0,10),tries:(prev.tries||0)+1};
   save(store);
   S.result={correct:correct,total:d.qs.length,areas:areas,missed:missed,secs:elapsed()};
+  sendReport(d,S.result);
   go('results');
 }
 function viewResults(){
@@ -578,7 +722,7 @@ function viewResults(){
   });
   var rev=r.missed.map(function(i){
     var q=d.qs[i],v=S.ans[i];
-    var yours=q.t==='mc'?(typeof v==='number'?String.fromCharCode(65+v)+'. '+q.opts[v]:'No answer'):(q.t==='free'?(norm(v)?v:'No answer'):(v==='not'?'Not yet':'No answer'));
+    var yours=yourAnswer(q,v);
     return h('div',{class:'rv'},
       h('div',{class:'eyebrow'},'Question '+(i+1)+' · '+AREAS[q.area]),
       q.p?h('div',{class:'muted small'},'Reading passage question'):null,
@@ -596,6 +740,7 @@ function viewResults(){
         h('div',{class:'big'},r.correct+' / '+r.total),
         h('div',null,h('h2',null,msg),h('p',{class:'muted'},'Time: '+fmt(r.secs)+(d.mode==='exam'&&r.secs>=d.minutes*60?' (time ran out)':'')))),
       h('div',{class:'skills'},ar)),
+    sentNode(),
     r.missed.length?h('div',null,h('h2',{class:'section-title'},'Questions to review ('+r.missed.length+')'),h('div',{class:'review'},rev)):
       h('div',{class:'panel',style:'margin-top:14px'},h('h3',null,'Every answer was right.'),h('p',{class:'muted'},'Try the next day, or retry this one to beat your time.')),
     h('div',{class:'actions',style:'margin-top:20px'},
