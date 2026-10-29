@@ -147,10 +147,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 @media (prefers-reduced-motion:no-preference){
   .bar>i{transition:width .5s ease}
 }
-body{margin:0}
 </style>
-</head>
-<body>
 
 <div class="wrap"><div id="app"></div></div>
 
@@ -162,6 +159,7 @@ body{margin:0}
 var AREAS={V:'Verbal',Q:'Quantitative',N:'Nonverbal',A:'Reading & math'};
 var PASS={
 bees:"Honeybees cannot talk, but they can still give directions. When a scout bee finds a patch of flowers far from the hive, she flies home and performs a special movement called the waggle dance on the wall of the honeycomb. She walks forward in a straight line while shaking her body from side to side, then loops back to the start and repeats the pattern.\n\nThe dance is a kind of map. The angle of the straight part of the dance, compared with straight up, shows the direction of the flowers compared with the sun. The longer she waggles, the farther away the flowers are. Other bees crowd around her in the dark hive, feeling the vibrations with their antennae. Soon, many of them fly out to find the same flowers.\n\nScientists worked out the meaning of the dance in the middle of the twentieth century, and many people are surprised by how precise it is. Even when clouds hide the sun, bees can often still find it using patterns of light in the sky that humans cannot see. This helps a hive gather food quickly, which matters because a colony needs a great deal of nectar to survive the winter.",
+pecan:"Pecan trees are native to North America and grow wild in parts of the southern United States. A pecan tree can live for hundreds of years and grow taller than 70 feet. Each fall, the nuts drop from the branches inside green husks that split open as they dry. Farmers use machines that shake the trunk so that the nuts fall to the ground, where they are swept into rows and collected. Georgia grows more pecans than most other states, and the nuts are used in pies, candies, and many other foods. Because pecan trees take many years to start producing nuts, farmers who plant new orchards must be patient.",
 swamp:"The Okefenokee Swamp stretches across southern Georgia and a small part of northern Florida. Its name is often said to mean \"land of trembling earth.\" In some places, thick mats of peat, which are made of dead plants, float on top of the water. When a person steps on one, the ground can shake and ripple for several feet around. Alligators, herons, and many other animals live here, and visitors paddle quiet canoe trails through water the color of tea. The dark color comes from tannins, which seep from the leaves and roots of plants the same way tea leaves color a cup of hot water.",
 ship:"Long ago, sailors found their way across the open ocean by looking at the stars. On a clear night, the North Star stays almost exactly in the same spot in the sky, so it always shows which way is north. Later, sailors invented the compass, a tool with a magnetic needle that points north even in bad weather. Today, ships use satellites to find exact locations, but many sailors still learn to read the stars in case their electronics fail."
 };
@@ -231,7 +229,7 @@ var DAYS=[
  mc('A','Why did the author most likely write this passage?',['To tell a funny story','To explain how something works','To ask people to protect bees','To teach people to keep bees'],1,'The author explains how the waggle dance works.',{p:'bees'}),
  mc('A','In the last paragraph, "precise" means:',['loud','exact','slow','random'],1,'Precise means exact, which fits a dance that gives directions.',{p:'bees'})
  ]},
-{n:5,title:'Week 1 mixed review quiz',area:'A',mode:'exam',minutes:20,
+{n:5,title:'Week 1 mixed review quiz',area:'A',mode:'exam',mixed:true,minutes:20,
  blurb:'12 mixed questions. Answers and explanations appear at the end.',
  tips:['This is a timed quiz with no feedback until the end, like a real test.','Skip any question that takes more than about 45 seconds and come back to it.','You can move between questions. Use the numbered boxes to jump around.'],
  ex:{q:'How to use your time',a:'20 minutes for 12 questions is a little over 1½ minutes each.'},
@@ -314,7 +312,7 @@ var DAYS=[
  fr('A','Point A is at (2, 5). Move it 3 units right and 2 units down. What are the new coordinates? (write like 4,1)',['5,3'],'Right 3 makes the first number 2 + 3 = 5. Down 2 makes the second number 5 − 2 = 3.',{show:'(5, 3)'}),
  fr('A','A recipe needs 3/4 cup of sugar. Jamal makes half of the recipe. How much sugar does he need? (in cups)',['3/8'],'Half of 3/4 is 3/4 × 1/2 = 3/8.',{show:'3/8 cup'})
  ]},
-{n:10,title:'Timed mock test',area:'A',mode:'exam',minutes:25,
+{n:10,title:'Timed mock test',area:'A',mode:'exam',mixed:true,minutes:25,
  blurb:'A full 20-question test with new questions from all four areas.',
  tips:['Find a quiet spot and treat this like the real thing. No help and no notes.','Read every direction. Cross out wrong answers before choosing.','Skip hard questions and come back to them. Use leftover time to double check.','If one question feels impossible, take a breath and move on. Most students miss some questions on tests like this.'],
  ex:{q:'Pacing',a:'25 minutes for 20 questions is about 75 seconds each.'},
@@ -341,6 +339,73 @@ var DAYS=[
  fr('A','A rectangle has a perimeter of 30 cm and a length of 9 cm. What is its width in centimeters?',['6'],'Length plus width is half the perimeter, which is 15. 15 − 9 = 6.')
  ]}
 ];
+
+/* ---------- weekend practice (new questions) ---------- */
+var WEEKEND=[
+{n:11,label:'Saturday',title:'Weak-spot workout',area:'N',chipText:'Patterns and numbers',mode:'practice',
+ blurb:'Pattern rules, two-step number rules, and multi-step word problems, all with new questions.',
+ tips:['Say the rule out loud, then test it on every row or on every jump. A rule has to work everywhere.','Grids: check the rows and the columns. If each shape appears once in every row and column, the missing one is the shape that row does not have yet.','Arrows and turns: first decide the direction (clockwise or counterclockwise) and the size of each turn.','Two-step number rules: try "double and add 1", "triple and subtract 1", or two patterns that take turns. Test the rule on every jump, not just the first.','Word problems: underline the numbers and write each step. If there are two groups, add them first, then multiply. At the end, ask "did I answer the question that was asked?"','Take your time. Check each answer once before you move on.'],
+ ex:{q:'6 becomes 13, 8 becomes 17, 10 becomes ?',a:'Double the number and add 1. 6 × 2 + 1 = 13 and 8 × 2 + 1 = 17, so 10 × 2 + 1 = 21.'},
+ qs:[
+ mc('N','Which answer completes the grid?',['◆','▲','●','■'],1,'Each shape appears once in every row and every column. Row 3 already has ● and ◆, so it needs ▲.',{grid:[['◆','▲','●'],['▲','●','◆'],['●','◆','?']]}),
+ mc('N','Which answer completes the grid?',['■','●','▲','◆'],1,'Each shape appears once in every row and every column. Row 3 already has ▲ and ■, so it needs ●.',{grid:[['■','●','▲'],['●','▲','■'],['▲','■','?']]}),
+ mc('N','The arrows turn the same way each step. Which answer completes the grid?',['↑','→','↓','←'],1,'Each step turns the arrow a quarter turn counterclockwise: right, up, left, down, right. After ↓ comes →.',{grid:[['→','↑','←'],['↑','←','↓'],['←','↓','?']]}),
+ mc('N','Which answer completes the grid?',['small △','big △','big ▲','small ▲'],1,'Across each row the shape gets bigger, then the third box is empty (not shaded). The last box is a big empty triangle.',{grid:[['small ●','big ●','big ○'],['small ■','big ■','big □'],['small ▲','big ▲','?']]}),
+ mc('N','Which answer completes the grid?',['4 ▲','5 ▲','5 ■','6 ▲'],1,'The count goes up by 1 across each row and by 1 down each column. The last box has 5 triangles.',{grid:[['1 ●','2 ●','3 ●'],['2 ■','3 ■','4 ■'],['3 ▲','4 ▲','?']]}),
+ mc('N','Which one does not belong?',['Triangle','Rectangle','Pentagon','Pyramid'],3,'Triangle, rectangle, and pentagon are flat shapes. A pyramid is a solid.'),
+ mc('N','Which one does not belong?',['Pentagon','Hexagon','Octagon','Circle'],3,'Pentagon, hexagon, and octagon are made of straight sides. A circle has no straight sides or corners.'),
+ mc('N','A shape points up. Each step it turns a quarter turn clockwise: up, right, down, and then? Which way does it point next?',['Up','Down','Left','Right'],2,'Clockwise quarter turns go up, right, down, left.'),
+ mc('N','A mirror is held against the right side of the lowercase letter "p". Which letter does the reflection look like?',['b','d','p','q'],3,'A mirror flips left and right. A p becomes a q.'),
+ fr('Q','3, 7, 15, 31, ?',['63'],'Double the number and add 1. 31 × 2 + 1 = 63.'),
+ fr('Q','2, 5, 14, 41, ?',['122'],'Triple the number and subtract 1. 41 × 3 − 1 = 122.'),
+ fr('Q','10, 12, 16, 24, ?',['40'],'The jumps double: +2, +4, +8, and then +16. 24 + 16 = 40.'),
+ fr('Q','2, 6, 7, 21, 22, 66, ?',['67'],'Two patterns take turns: multiply by 3, then add 1. After 66 comes + 1.'),
+ fr('Q','100, 50, 52, 26, 28, 14, ?',['16'],'Divide by 2, then add 2, and repeat. 14 + 2 = 16.'),
+ fr('Q','3 becomes 10, 5 becomes 16, 8 becomes ?',['25'],'Triple the number and add 1. 8 × 3 + 1 = 25.'),
+ fr('Q','A school bus carries 24 students when it is full. 3 buses go to the museum in the morning and 2 more go in the afternoon. All of the buses are full. How many students go in all?',['120'],'Add the buses first: 3 + 2 = 5 buses. Then 5 × 24 = 120.'),
+ fr('Q','Maya buys 4 notebooks at $3 each and 2 pens at $2 each. She pays with a $20 bill. How much change does she get?',['4'],'Notebooks cost 4 × 3 = 12 and pens cost 2 × 2 = 4, so she spends 16. 20 − 16 = 4.',{show:'$4'}),
+ fr('Q','A farm has 8 rows of pecan trees with 12 trees in each row. 15 trees are removed and 20 new trees are planted. How many trees does the farm have now?',['101'],'8 × 12 = 96 trees. 96 − 15 = 81, and 81 + 20 = 101.'),
+ fr('Q','A train leaves at 2:15 PM and the trip takes 2 hours and 50 minutes. What time does it arrive? (write like 4:30)',['5:05','5:05 pm','5:05pm'],'2:15 plus 2 hours is 4:15. Plus 50 minutes is 5:05.',{show:'5:05 PM'}),
+ fr('Q','Two numbers add up to 40, and the difference between them is 6. What is the larger number?',['23'],'Try pairs that add up to 40. 23 and 17 differ by 6, so the larger number is 23.'),
+ fr('Q','A rectangle is twice as long as it is wide. Its perimeter is 36 cm. What is its width in centimeters?',['6'],'Half the perimeter is 18, which is the length plus the width. If the width is 6, the length is 12, and 6 + 12 = 18.')
+ ]},
+{n:12,label:'Sunday',title:'Mock test 2',area:'A',mixed:true,mode:'exam',minutes:30,
+ blurb:'A full 24-question timed test with all new questions from all four areas.',
+ tips:['Treat this like the real test: quiet room, no help, no notes.','Use your time. Read every question twice and check each answer before you move on.','If a question takes more than about a minute, skip it and come back at the end.','At the end, use leftover time to re-check the grids and the number rules.'],
+ ex:{q:'Pacing',a:'30 minutes for 24 questions is a bit over a minute per question. Finishing in 10 minutes would mean rushing.'},
+ qs:[
+ mc('V','Scene : Play :: Verse : ?',['Poem','Actor','Stage','Rhyme'],0,'A scene is a part of a play. A verse is a part of a poem.'),
+ mc('V','Humble : Proud :: Ancient : ?',['Old','Modern','Dusty','Historic'],1,'Humble and proud are opposites. Ancient and modern are opposites.'),
+ mc('V','Which one does not belong?',['Whisper','Mumble','Murmur','Shout'],3,'Whisper, mumble, and murmur are quiet ways to speak. A shout is loud.'),
+ mc('V','Although the explorer was ______ about the dangerous trip, he packed carefully and set off.',['eager','hesitant','calm','bored'],1,'"Although" signals a contrast. He set off even though he felt hesitant (unsure).'),
+ mc('V','"Spect" means see. A spectator is someone who ______.',['watches','speaks','builds','reads'],0,'A spectator watches an event.'),
+ fr('Q','5, 11, 23, 47, ?',['95'],'Double the number and add 1. 47 × 2 + 1 = 95.'),
+ fr('Q','2, 4, 7, 11, 16, ?',['22'],'The jumps grow: +2, +3, +4, +5, so the next jump is +6. 16 + 6 = 22.'),
+ fr('Q','160, 80, 40, 20, ?',['10'],'Divide by 2 each time.'),
+ fr('Q','4, 8, 5, 10, 7, 14, ?',['11'],'Two patterns take turns: double, then subtract 3. 14 − 3 = 11.'),
+ fr('Q','6 becomes 20, 9 becomes 29, 4 becomes ?',['14'],'Triple the number and add 2. 4 × 3 + 2 = 14.'),
+ fr('Q','(? × 4) − 6 = 30',['9'],'30 + 6 = 36, and 36 ÷ 4 = 9.'),
+ fr('Q','Tom has $50. He buys 3 books at $9 each and a game for $14. How much money does he have left?',['9'],'3 × 9 = 27. 27 + 14 = 41. 50 − 41 = 9.',{show:'$9'}),
+ mc('N','Which answer completes the grid?',['●','▲','■','◆'],1,'Each shape appears once in every row and every column. Row 3 already has ● and ■, so it needs ▲.',{grid:[['▲','●','■'],['■','▲','●'],['●','■','?']]}),
+ mc('N','Which answer completes the grid?',['4 triangles','5 triangles','6 triangles','3 triangles'],1,'The count goes up by 1 across each row and down each column. The last box has 5 triangles.',{grid:[['1 triangle','2 triangles','3 triangles'],['2 triangles','3 triangles','4 triangles'],['3 triangles','4 triangles','?']]}),
+ mc('N','The arrow turns the same small amount each step. Which answer completes the grid?',['↓','↘','→','↑'],0,'Each step turns the arrow one eighth of a turn counterclockwise: up, up-left, left, down-left, down.',{grid:[['↑','↖','←'],['↖','←','↙'],['←','↙','?']]}),
+ fr('N','A paper is folded in half 3 times, making 8 layers. One hole is punched through all the layers, away from the folds. How many holes are there when it is unfolded?',['8'],'Eight layers with one hole through each makes 8 holes.'),
+ fr('N','A block is built from small cubes, 5 across, 3 deep, and 2 high. How many small cubes are in the block?',['30'],'5 × 3 × 2 = 30.'),
+ mc('N','A person faces east. They turn a quarter turn clockwise, then a half turn. Which way do they face now?',['North','South','East','West'],0,'A quarter turn clockwise from east faces south. A half turn from south faces north.'),
+ mc('N','Which one does not belong?',['Cube','Cylinder','Sphere','Circle'],3,'Cube, cylinder, and sphere are solid shapes. A circle is flat.'),
+ mc('A','What is the main idea of the passage?',['How pecan trees grow and how the nuts are harvested','Why pecans are better than other nuts','How to bake a pecan pie','Where pecan trees were first discovered'],0,'The passage describes how long the trees live, how the nuts fall, and how farmers collect them.',{p:'pecan'}),
+ mc('A','Why must farmers who plant new orchards be patient?',['Pecan trees take many years to start producing nuts','The nuts are hard to crack','The harvest machines are slow','Georgia has little rain'],0,'The last sentence says pecan trees take many years to start producing nuts.',{p:'pecan'}),
+ mc('A','In the passage, "husks" are:',['the outer coverings of the nuts','tools used for harvesting','the roots of the tree','a kind of pie'],0,'The nuts fall inside green husks that split open, so husks are the coverings.',{p:'pecan'}),
+ mc('A','What can you infer about why farmers shake the tree trunks with machines?',['It is faster than picking up every nut by hand','It makes the nuts taste better','It makes the trees grow faster','They want to collect the leaves'],0,'Shaking the trunk makes many nuts fall at once, which is faster than picking them from the branches.',{p:'pecan'}),
+ fr('A','3/4 − 1/6 = ?',['7/12'],'3/4 = 9/12 and 1/6 = 2/12. 9/12 − 2/12 = 7/12.')
+ ]}
+];
+/* spread the correct answers over A-D so the position is not a clue */
+WEEKEND.forEach(function(d){d.qs.forEach(function(q,i){
+  if(q.t!=='mc')return;
+  var k=(i*3+d.n)%q.opts.length,o=q.opts;
+  q.opts=o.slice(k).concat(o.slice(0,k));q.a=(q.a-k+o.length)%o.length;});});
+var ALL=DAYS.concat(WEEKEND);
 
 /* ---------- storage ---------- */
 var KEY='grade5-brain-gym-v1';
@@ -435,7 +500,7 @@ function h(tag,props){
     else if(v===true)e.setAttribute(k,'');
     else if(v!==false&&v!=null)e.setAttribute(k,v);
   }
-  (function add(list){for(i=0;i<list.length;i++){var c=list[i];
+  (function add(list){for(var i=0;i<list.length;i++){var c=list[i];
     if(c==null||c===false)continue;
     if(Array.isArray(c))add(c);
     else e.appendChild(c.nodeType?c:document.createTextNode(String(c)));
@@ -460,6 +525,8 @@ function showAnswer(q){
   return q.sample;
 }
 function fmt(s){var m=Math.floor(s/60),r=s%60;return m+':'+(r<10?'0':'')+r;}
+function dayLabel(d){return d.label||'Day '+d.n;}
+function dayChip(d){return d.chipText?h('span',{class:'chip',style:'--c:var(--accent)'},d.chipText):d.mixed?h('span',{class:'chip',style:'--c:var(--accent)'},'All four areas'):chip(d.area);}
 function chip(area){return h('span',{class:'chip area-'+area},AREAS[area]);}
 
 /* ---------- state ---------- */
@@ -502,7 +569,7 @@ function viewWho(){
   }
   inp.addEventListener('keydown',function(e){if(e.key==='Enter')add();});
   var cards=list.map(function(p){
-    var done=Object.keys(store.data[p.id]||{}).length;
+    var done=DAYS.filter(function(d){return (store.data[p.id]||{})[d.n];}).length;
     return h('div',{class:'who-row'},
       h('button',{class:'who-card',style:'--c:var('+COLORS[p.color%4]+')',onclick:function(){store.active=p.id;save(store);go('home');}},
         avatar(p),h('span',{class:'who-name'},p.name),h('span',{class:'muted small'},done+' of 10 days')),
@@ -531,7 +598,7 @@ function viewWho(){
 /* ---------- home ---------- */
 function areaTotals(){
   var t={V:[0,0],Q:[0,0],N:[0,0],A:[0,0]};
-  DAYS.forEach(function(d){var r=mine()[d.n];if(!r||!r.areas)return;
+  ALL.forEach(function(d){var r=mine()[d.n];if(!r||!r.areas)return;
     for(var k in r.areas){t[k][0]+=r.areas[k][0];t[k][1]+=r.areas[k][1];}});
   return t;
 }
@@ -544,17 +611,18 @@ function viewHome(){
       h('div',{class:'row'},h('span',null,AREAS[k]),h('span',{class:'muted'},n?c+' of '+n:'Not started')),
       h('div',{class:'bar',role:'img','aria-label':AREAS[k]+' '+pct+' percent'},h('i',{style:'width:'+pct+'%'})));
   });
-  var cards=DAYS.map(function(d){
+  function dayCard(d){
     var r=mine()[d.n];
-    return h('button',{class:'day',onclick:function(){go('learn',d)},'aria-label':'Day '+d.n+': '+d.title},
-      h('span',{class:'num'},'Day '+d.n),
+    return h('button',{class:'day',onclick:function(){go('learn',d)},'aria-label':dayLabel(d)+': '+d.title},
+      h('span',{class:'num'},dayLabel(d)),
       h('h3',null,d.title),
       h('p',{class:'muted small'},d.blurb),
-      h('div',{class:'meta'},chip(d.area),d.mode==='exam'?h('span',{class:'chip timed'},'Timed · '+d.minutes+' min'):null),
+      h('div',{class:'meta'},dayChip(d),d.mode==='exam'?h('span',{class:'chip timed'},'Timed · '+d.minutes+' min'):null),
       h('div',{class:'foot'},
         h('span',null,d.qs.length+' questions'),
-        r?h('span',{class:'done'},'Best '+r.best+' of '+r.total):h('span',null,'Not started')));
-  });
+        r?h('span',{class:'done'},r.first!=null&&r.first!==r.best?'First '+r.first+' · Best '+r.best+' of '+r.total:'Best '+r.best+' of '+r.total):h('span',null,'Not started')));
+  }
+  var cards=DAYS.map(dayCard),wcards=WEEKEND.map(dayCard);
   var reset=h('button',{class:'link',onclick:function(e){
     if(e.currentTarget.dataset.sure){store.data[store.active]={};save(store);render();}
     else{e.currentTarget.dataset.sure='1';e.currentTarget.textContent='Tap again to clear '+me().name+'\'s saved scores';}
@@ -567,10 +635,13 @@ function viewHome(){
       h('div',{class:'meter'},h('span',{class:'muted small'},'Days finished'),h('b',null,done+' of 10'),
         h('div',{class:'bar',role:'img','aria-label':done+' of 10 days finished'},h('i',{style:'width:'+(done*10)+'%'})))),
     h('div',{class:'panel'},h('h2',null,'My skills'),
-      done?h('p',{class:'muted small'},'Based on your latest try of each day.'):h('p',{class:'muted small'},'Finish a day and your scores for each skill show up here.'),
+      done?h('p',{class:'muted small'},'Based on your first try of each day.'):h('p',{class:'muted small'},'Finish a day and your scores for each skill show up here.'),
       h('div',{class:'skills'},skills)),
     h('h2',{class:'section-title'},'The 10 days'),
     h('div',{class:'days'},cards),
+    h('h2',{class:'section-title'},'Weekend practice'),
+    h('p',{class:'muted small'},'Extra sessions with all new questions for Saturday and Sunday.'),
+    h('div',{class:'days'},wcards),
     h('p',{class:'muted small',style:'margin-top:24px'},'Scores save in this browser on this device. ',reset),
     h('div',{style:'margin-top:16px'},parentSettings()));
 }
@@ -580,8 +651,8 @@ function viewLearn(){
   var d=S.day,exam=d.mode==='exam';
   return h('div',{class:'lesson'},
     h('div',{class:'topbar'},h('button',{class:'btn ghost',onclick:function(){go('home')}},'← All days')),
-    h('div',null,h('div',{class:'eyebrow'},'Day '+d.n),h('h1',null,d.title),
-      h('div',{style:'margin-top:8px;display:flex;gap:6px;flex-wrap:wrap'},chip(d.area),exam?h('span',{class:'chip timed'},'Timed · '+d.minutes+' min'):null)),
+    h('div',null,h('div',{class:'eyebrow'},dayLabel(d)),h('h1',null,d.title),
+      h('div',{style:'margin-top:8px;display:flex;gap:6px;flex-wrap:wrap'},dayChip(d),exam?h('span',{class:'chip timed'},'Timed · '+d.minutes+' min'):null)),
     h('div',{class:'panel'},h('h2',null,exam?'Before you start':'Learn first'),
       h('ul',null,d.tips.map(function(t){return h('li',null,t)}))),
     h('div',{class:'example'},h('div',{class:'eyebrow'},exam?d.ex.q:'Worked example'),
@@ -621,7 +692,7 @@ function viewQuiz(){
       go('home');}},S.confirm==='leave'?'Tap again to leave without scoring':'← Leave'),
     h('span',{class:'clock',id:'clock',role:'timer','aria-label':exam?'Time left':'Time so far'},exam?fmt(d.minutes*60):'0:00'));
   var prog=h('div',null,
-    h('div',{class:'qhead'},h('span',null,'Day '+d.n+' · Question '+(S.idx+1)+' of '+d.qs.length),chip(q.area)),
+    h('div',{class:'qhead'},h('span',null,dayLabel(d)+' · Question '+(S.idx+1)+' of '+d.qs.length),chip(q.area)),
     h('div',{class:'bar',role:'progressbar','aria-valuemin':0,'aria-valuemax':d.qs.length,'aria-valuenow':S.idx+1},h('i',{style:'width:'+((S.idx+1)/d.qs.length*100)+'%'})));
 
   var body=[];
@@ -708,9 +779,9 @@ function finish(){
   });
   store.data[store.active]=store.data[store.active]||{};
   var prev=store.data[store.active][d.n]||{};
-  store.data[store.active][d.n]={best:Math.max(prev.best||0,correct),total:d.qs.length,last:correct,areas:areas,secs:elapsed(),date:new Date().toISOString().slice(0,10),tries:(prev.tries||0)+1};
+  store.data[store.active][d.n]={best:Math.max(prev.best||0,correct),total:d.qs.length,last:correct,areas:prev.areas||areas,first:(prev.first!=null?prev.first:(prev.tries?null:correct)),secs:elapsed(),date:new Date().toISOString().slice(0,10),tries:(prev.tries||0)+1};
   save(store);
-  S.result={correct:correct,total:d.qs.length,areas:areas,missed:missed,secs:elapsed()};
+  S.result={correct:correct,total:d.qs.length,areas:areas,missed:missed,secs:elapsed(),retry:!!prev.tries};
   sendReport(d,S.result);
   go('results');
 }
@@ -733,20 +804,24 @@ function viewResults(){
       h('div',{class:'small'},'Answer: ',h('b',null,showAnswer(q))),
       h('div',{class:'muted small'},q.why));
   });
-  var next=DAYS[d.n];
+  var next=ALL[d.n];
+  var notes=[];
+  if(r.retry)notes.push(h('p',{class:'muted small'},'This was a retry with the same questions, so your first try is the one that shows what you really know.'));
+  if(d.mode==='exam'&&r.secs<d.minutes*60*0.4)notes.push(h('p',{class:'muted small'},'You finished with a lot of time left. On a real test, use the extra time to go back and check your answers.'));
   return h('div',null,
     h('div',{class:'topbar'},h('button',{class:'btn ghost',onclick:function(){go('home')}},'← All days')),
     h('div',{class:'panel'},
-      h('div',{class:'eyebrow'},'Day '+d.n+' results'),
+      h('div',{class:'eyebrow'},dayLabel(d)+' results'),
       h('div',{class:'score',style:'margin-top:8px'},
         h('div',{class:'big'},r.correct+' / '+r.total),
         h('div',null,h('h2',null,msg),h('p',{class:'muted'},'Time: '+fmt(r.secs)+(d.mode==='exam'&&r.secs>=d.minutes*60?' (time ran out)':'')))),
       h('div',{class:'skills'},ar)),
     sentNode(),
+    notes,
     r.missed.length?h('div',null,h('h2',{class:'section-title'},'Questions to review ('+r.missed.length+')'),h('div',{class:'review'},rev)):
       h('div',{class:'panel',style:'margin-top:14px'},h('h3',null,'Every answer was right.'),h('p',{class:'muted'},'Try the next day, or retry this one to beat your time.')),
     h('div',{class:'actions',style:'margin-top:20px'},
-      next?h('button',{class:'btn',onclick:function(){go('learn',next)}},'Day '+next.n+': '+next.title):h('button',{class:'btn',onclick:function(){go('home')}},'Back to all days'),
+      next?h('button',{class:'btn',onclick:function(){go('learn',next)}},dayLabel(next)+': '+next.title):h('button',{class:'btn',onclick:function(){go('home')}},'Back to all days'),
       h('button',{class:'btn ghost',onclick:function(){startQuiz(d)}},'Retry this day')));
 }
 
